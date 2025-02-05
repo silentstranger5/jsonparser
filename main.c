@@ -27,5 +27,6 @@ int main(int argc, char **argv) {
     // free all data
     free_value(&value);
     free_string(&string);
+    free(source);
     return 0;
 }

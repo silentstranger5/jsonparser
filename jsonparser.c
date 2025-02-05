@@ -9,11 +9,11 @@ int file_read(const char *filename, char **buffer) {
     }
     fseek(f, 0, SEEK_END);
     int size = ftell(f);
-    *buffer = malloc(size * sizeof(char));
+    *buffer = malloc((size + 1) * sizeof(char));
     rewind(f);
     int ret = fread(*buffer, sizeof(char), size, f);
+    (*buffer)[size] = 0;
     fclose(f);
-    *(strrchr(*buffer, '}') + 1) = 0;
     return ret;
 }
 
@@ -49,7 +49,7 @@ void add_token(scanner *scanner, int token_type) {
     char *text = substring(
         scanner->source, scanner->start, scanner->current
     );
-    token tok = {
+    token token = {
         .type = token_type,
         .lexeme = text,
         .line = scanner->line,
@@ -60,7 +60,7 @@ void add_token(scanner *scanner, int token_type) {
             scanner->tokens, scanner->capacity * sizeof(token)
         );
     }
-    scanner->tokens[scanner->size++] = tok;
+    scanner->tokens[scanner->size++] = token;
 }
 
 void scanner_string(scanner *scanner) {
@@ -112,9 +112,6 @@ void number(scanner *scanner) {
             scanner_advance(scanner);
         }
     }
-    char *numstr = substring(
-        scanner->source, scanner->start, scanner->current
-    );
     add_token(scanner, TOKEN_NUMBER);
 }
 
@@ -142,6 +139,7 @@ void identifier(scanner *scanner) {
         scanner_error(scanner->line, line);
     }
     add_token(scanner, type);
+    free(text);
 }
 
 void scan_token(scanner *scanner) {
@@ -246,24 +244,24 @@ token consume(parser *parser, int type, char *msg) {
     return (token){0};
 }
 
-void array_add_value(array *array, value *val) {
+void array_add_value(array *array, value *value) {
     if (array->size >= array->capacity) {
         array->capacity *= 2;
         array->elements = realloc(
-            array->elements, array->capacity * sizeof(value)
+            array->elements, array->capacity * sizeof(*value)
         );
     }
-    array->elements[array->size++] = *val;
+    array->elements[array->size++] = *value;
 }
 
-void object_add_member(object *object, member *mem) {
+void object_add_member(object *object, member *member) {
     if (object->size >= object->capacity) {
         object->capacity *= 2;
         object->members = realloc(
-            object->members, object->capacity * sizeof(member)
+            object->members, object->capacity * sizeof(*member)
         );
     }
-    object->members[object->size++] = *mem;
+    object->members[object->size++] = *member;
 }
 
 void parse_value(parser *, value *);
@@ -366,7 +364,7 @@ void parse_value(parser *parser, value *value) {
 }
 
 void parser_free(parser *parser) {
-    for (int i = 0; i < parser->current; i++) {
+    for (int i = 0; i < parser->current + 1; i++) {
         free(parser->tokens[i].lexeme);
     }
     free(parser->tokens);
@@ -384,6 +382,7 @@ void free_value(value *value) {
         for (int i = 0; i < value->object.size; i++) {
             free(value->object.members[i].string);
             free_value(value->object.members[i].value);
+            free(value->object.members[i].value);
         }
         free(value->object.members);
         break;
