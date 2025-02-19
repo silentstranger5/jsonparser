@@ -22,3 +22,11 @@ You can use the program like this:
 ```bash
 jsonparser [file.json]  # replace file.json with path to .json file
 ```
+
+## Samples
+
+This project includes [samples](samples) from the [official website](https://json.org/examples) that you can use to test this code. You can use them like so:
+
+```bash
+jsonparser samples/sample1.json
+```

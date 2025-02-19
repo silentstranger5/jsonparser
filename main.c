@@ -7,10 +7,8 @@ int main(int argc, char **argv) {
         return 1;
     }
     // read the file from the first argument
-    char *source = NULL;
-    int size = file_read(argv[1], &source);
-    if (!size) {
-        fprintf(stderr, "failed to read file %s\n", argv[1]);
+    char *source = file_read(argv[1]);
+    if (!source) {
         return 1;
     }
     // parse the json file and store it as a value

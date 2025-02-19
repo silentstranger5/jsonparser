@@ -91,7 +91,7 @@ typedef struct {
 } string;
 
 // read the file
-int file_read(const char *filename, char **buffer);
+char *file_read(const char *filename);
 // parse json string and store result in value
 void parse_json(const char *source, value *value);
 // convert value to string, set ind to 0
